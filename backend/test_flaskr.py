@@ -56,6 +56,27 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+    
+    # @TODO: Write tests for search - at minimum two
+    #        that check a response when there are results and when there are none
+
+    def test_get_book_search_with_results(self):
+        res = self.client().post('/books', json={'search': 'Novel'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_books'])
+        self.assertEqual(len(data['books']), 3)
+    
+    def test_get_book_search_without_results(self):
+        res = self.client().post('/books', json={'search': 'applejacks'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_books'], 0)
+        self.assertEqual(len(data['books']), 0)
 
     def test_update_book_rating(self):
         res = self.client().patch('/books/9', json={'rating': 1})
@@ -94,14 +115,14 @@ class BookTestCase(unittest.TestCase):
     
     # Delete a different book in each attempt
     def test_delete_book(self):
-        res = self.client().delete('/books/8')
+        res = self.client().delete('/books/5')
         data = json.loads(res.data)
 
-        book = Book.query.filter(Book.id == 8).one_or_none()
+        book = Book.query.filter(Book.id == 5).one_or_none()
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], 8)
+        self.assertEqual(data['deleted'], 5)
         self.assertTrue(data['total_books'])
         self.assertTrue(len(data['books']))
         self.assertEqual(book, None)
